@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState } from "react";
 import moment from "moment";
 
 import Timeline from "react-calendar-timeline";
@@ -17,29 +17,19 @@ var keys = {
   itemTimeEndKey: "end"
 };
 
-export default class App extends Component {
-  constructor(props) {
-    super(props);
+export const CustomTimeline = () => {
+  const [scrollRef, setScrollRef] = useState();
+  const { groups, items } = generateFakeData();
+  const defaultTimeStart = moment()
+    .startOf("day")
+    .toDate();
+  const defaultTimeEnd = moment()
+    .startOf("day")
+    .add(1, "day")
+    .toDate();
 
-    const { groups, items } = generateFakeData();
-    const defaultTimeStart = moment()
-      .startOf("day")
-      .toDate();
-    const defaultTimeEnd = moment()
-      .startOf("day")
-      .add(1, "day")
-      .toDate();
-
-    this.state = {
-      groups,
-      items,
-      defaultTimeStart,
-      defaultTimeEnd
-    };
-  }
-
-  animateScroll = invert => {
-    const width = (invert ? -1 : 1) * parseFloat(this.scrollRef.style.width); // cos curve in both directions
+  const animateScroll = invert => {
+    const width = (invert ? -1 : 1) * parseFloat(scrollRef.style.width); // cos curve in both directions
     const duration = 2000;
 
     const startTime = performance.now();
@@ -55,7 +45,7 @@ export default class App extends Component {
       const calculatedWidth = Math.floor(
         width * 0.5 * (1 + Math.cos(Math.PI * (normalizedTime - 1)))
       );
-      this.scrollRef.scrollLeft += calculatedWidth - lastWidth;
+      scrollRef.scrollLeft += calculatedWidth - lastWidth;
       lastWidth = calculatedWidth;
 
       if (normalizedTime < 1) {
@@ -65,21 +55,24 @@ export default class App extends Component {
     requestAnimationFrame(animate);
   };
 
-  onPrevClick = () => {
-    this.animateScroll(true);
+  const onPrevClick = () => {
+    animateScroll(true);
   };
 
-  onNextClick = () => {
-    this.animateScroll(false);
+  const onNextClick = () => {
+    animateScroll(false);
   };
 
-  render() {
-    const { groups, items, defaultTimeStart, defaultTimeEnd } = this.state;
+  const sr = (el) => {
+    console.log({el})
+    setScrollRef(el)
+  };
+
 
     return (
       <div>
         <Timeline
-          scrollRef={el => (this.scrollRef = el)}
+          scrollRef={sr}
           groups={groups}
           items={items}
           keys={keys}
@@ -94,9 +87,8 @@ export default class App extends Component {
           defaultTimeStart={defaultTimeStart}
           defaultTimeEnd={defaultTimeEnd}
         />
-        <button onClick={this.onPrevClick}>{"< Prev"}</button>
-        <button onClick={this.onNextClick}>{"Next >"}</button>
+        <button onClick={onPrevClick}>{"< Prev"}</button>
+        <button onClick={onNextClick}>{"Next >"}</button>
       </div>
     );
-  }
 }
